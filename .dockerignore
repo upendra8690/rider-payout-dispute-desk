@@ -1,0 +1,16 @@
+.git
+.github
+.venv
+venv
+**/__pycache__
+**/*.pyc
+.env
+ai-logs
+tests
+evals
+scripts
+payswift
+docs
+*.md
+.pytest_cache
+.ruff_cache

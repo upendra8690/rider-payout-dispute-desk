@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dispute Desk · Ops</title>
+  <link rel="stylesheet" href="/static/styles.css?v={{ version }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">₹</span>
+      <div>
+        <h1>Rider Payout Dispute Desk</h1>
+        <p class="sub">QuickDrop operations console</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span id="chip-llm" class="chip">engine: …</span>
+      <span id="chip-payswift" class="chip">PaySwift: …</span>
+      <label class="toggle"><input type="checkbox" id="auto-refresh" checked> auto-refresh</label>
+      <button id="btn-refresh" class="btn ghost" type="button">Refresh</button>
+      <button id="btn-logout" class="btn ghost" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <main id="app" hidden>
+    <section class="kpis" aria-label="Key numbers">
+      <div class="kpi"><span class="kpi-label">Total disputes</span><span class="kpi-value" id="k-total">–</span><span class="kpi-foot" id="k-total-foot"></span></div>
+      <div class="kpi"><span class="kpi-label">Resolved automatically</span><span class="kpi-value" id="k-auto">–</span><span class="kpi-foot" id="k-auto-foot"></span></div>
+      <div class="kpi warn"><span class="kpi-label">Pending approvals</span><span class="kpi-value" id="k-appr">–</span><span class="kpi-foot" id="k-appr-foot"></span></div>
+      <div class="kpi danger"><span class="kpi-label">Open escalations</span><span class="kpi-value" id="k-esc">–</span><span class="kpi-foot">need a human</span></div>
+      <div class="kpi ok"><span class="kpi-label">Payouts processed</span><span class="kpi-value" id="k-paid">–</span><span class="kpi-foot" id="k-paid-foot"></span></div>
+      <div class="kpi"><span class="kpi-label">PaySwift ledger</span><span class="kpi-value" id="k-ps">–</span><span class="kpi-foot" id="k-ps-foot"></span></div>
+    </section>
+
+    <section class="grid">
+      <div class="panel" id="queue-panel">
+        <div class="panel-head">
+          <h2>Ops queue</h2>
+          <div class="seg" role="tablist">
+            <button class="seg-btn active" data-queue="pending" type="button">Pending</button>
+            <button class="seg-btn" data-queue="all" type="button">History</button>
+          </div>
+        </div>
+        <div id="queue" class="list"></div>
+      </div>
+
+      <div class="panel" id="conv-panel">
+        <div class="panel-head">
+          <h2>Conversations</h2>
+          <input id="conv-filter" class="search" type="search" placeholder="Filter rider / text">
+        </div>
+        <div id="conversations" class="list"></div>
+      </div>
+
+      <div class="panel detail" id="detail-panel">
+        <div class="panel-head">
+          <h2 id="detail-title">Select a conversation</h2>
+          <div class="seg" role="tablist" id="detail-tabs">
+            <button class="seg-btn active" data-tab="chat" type="button">Conversation</button>
+            <button class="seg-btn" data-tab="disputes" type="button">Disputes</button>
+            <button class="seg-btn" data-tab="payments" type="button">Payments</button>
+            <button class="seg-btn" data-tab="trace" type="button">Trace</button>
+            <button class="seg-btn" data-tab="audit" type="button">Audit</button>
+          </div>
+        </div>
+        <div id="detail" class="detail-body"><p class="empty">Pick a rider on the left to see the conversation, every check the agent ran, the money it moved and why.</p></div>
+      </div>
+    </section>
+
+    <section class="panel dq">
+      <div class="panel-head"><h2>Data quality fixes applied on import</h2></div>
+      <div id="dq" class="dq-body"></div>
+    </section>
+  </main>
+
+  <div id="login" class="login" hidden>
+    <form id="login-form" class="login-card">
+      <h2>Ops sign-in</h2>
+      <p>Enter the ops API token (<code>OPS_API_TOKEN</code>) and your name. Your name is recorded in the audit trail for every approval.</p>
+      <label>Token <input id="login-token" type="password" autocomplete="current-password" required></label>
+      <label>Your name <input id="login-name" type="text" placeholder="e.g. meera" required maxlength="80"></label>
+      <button class="btn primary" type="submit">Open console</button>
+      <p id="login-error" class="error" hidden></p>
+    </form>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="/static/app.js?v={{ version }}"></script>
+</body>
+</html>

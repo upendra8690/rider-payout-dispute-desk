@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: qd
+          POSTGRES_PASSWORD: qd
+          POSTGRES_DB: dispute_desk_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U qd -d dispute_desk_test"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"   # the PaySwift sandbox is Python 3.12 bytecode
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Lint
+        run: ruff check app tests evals
+      - name: Unit + integration tests (real Postgres, real PaySwift sandbox)
+        run: pytest -q
+        env:
+          TEST_DATABASE_URL: postgresql+psycopg://qd:qd@localhost:5432/dispute_desk_test
+
+  evals:
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: docker compose up
+        run: docker compose up -d --build --wait
+      - name: Evals (fresh system per round via docker compose down -v / up)
+        run: python evals/run.py http://localhost:8000 --json eval-report.json
+      - name: Logs
+        if: always()
+        run: docker compose logs --no-color > compose.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-report
+          path: |
+            eval-report.json
+            compose.log

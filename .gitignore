@@ -1,0 +1,11 @@
+.env
+.venv/
+venv/
+node_modules/
+__pycache__/
+*.pyc
+!payswift/server.pyc
+.pytest_cache/
+.ruff_cache/
+eval-report.json
+*.log

@@ -1,0 +1,50 @@
+# docker compose up --build   -> dispute desk on :8000, PaySwift sandbox on :8081, Postgres (volume pgdata)
+# The payswift service is exactly as provided.
+services:
+  payswift:
+    build: ./payswift
+    ports:
+      - "8081:8081"
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: qd
+      POSTGRES_PASSWORD: qd
+      POSTGRES_DB: dispute_desk
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qd -d dispute_desk"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://qd:qd@db:5432/dispute_desk
+      PAYSWIFT_BASE_URL: http://payswift:8081
+      OPS_API_TOKEN: ${OPS_API_TOKEN:-change-me-ops-token}
+      LLM_PROVIDER: ${LLM_PROVIDER:-none}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      db:
+        condition: service_healthy
+      payswift:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health', timeout=2).status == 200 else 1)"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+      start_period: 5s
+    restart: unless-stopped
+
+volumes:
+  pgdata:
